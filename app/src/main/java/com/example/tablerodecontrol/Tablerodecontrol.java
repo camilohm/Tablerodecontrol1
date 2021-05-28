@@ -52,7 +52,6 @@ public class Tablerodecontrol extends AppCompatActivity {
 
     String Nombre_Directorio = "MisPDFs";
     String Nombre_Documento = "MiPDF.pdf";
-    EditText etTexto;
     Button btnGenerar;
     EditText ETt;
     ListView L3;
@@ -70,7 +69,7 @@ public class Tablerodecontrol extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tablerodecontrol);
 
-        etTexto = findViewById(R.id.etTexto);
+
         btnGenerar = findViewById(R.id.btnGenerar);
         L3 = findViewById(R.id.lista3);
 
@@ -88,7 +87,7 @@ public class Tablerodecontrol extends AppCompatActivity {
         btnGenerar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                crearPDF();
+                crearPDF(ja1);
                 Toast.makeText(Tablerodecontrol.this, "Se creó el PDF", Toast.LENGTH_LONG).show();
             }
         });
@@ -113,7 +112,7 @@ public class Tablerodecontrol extends AppCompatActivity {
 
     }
 
-    public void crearPDF() {
+    public void crearPDF(JSONArray data) {
             Document documento = new Document();
 
             try {
@@ -124,19 +123,38 @@ public class Tablerodecontrol extends AppCompatActivity {
 
                 documento.open();
 
-                documento.add(new Paragraph("TABLA \n\n"));
-                documento.add(new Paragraph( etTexto.getText().toString()+"\n\n"));
+                if (data.length() != 0) {
+                    for (int i = 0; i < ja1.length(); i++) {
+                        JSONObject obj = ja1.getJSONObject(i);
 
-                // Insertamos una tabla
-                PdfPTable tabla = new PdfPTable(5);
-                for(int i = 0 ; i < 15 ; i++) {
-                    tabla.addCell("CELDA "+i);
+                        idM = obj.getString("idMedicamento");
+                        Cdm = obj.getString("codigoMedicamento");
+                        Nm = obj.getString("nombreMedicamento");
+                        Ub = obj.getString("cantidadTotalMedicamento");
+
+                        documento.add(new Paragraph("Id medicamento: " + idM));
+                        documento.add(new Paragraph("Código: " + Cdm));
+                        documento.add(new Paragraph("Nombre: " + Nm));
+                        documento.add(new Paragraph("Cantidad: " + Ub));
+                    }
                 }
 
-                documento.add(tabla);
+
+                //documento.add(new Paragraph("TABLA \n\n"));
+
+
+                // Insertamos una tabla
+               // PdfPTable tabla = new PdfPTable(5);
+              //  for(int i = 0 ; i < 15 ; i++) {
+              //      tabla.addCell("CELDA "+i);
+              //  }
+
+              //  documento.add(tabla);
 
             } catch(DocumentException e) {
             } catch(IOException e) {
+            } catch (JSONException e) {
+                e.printStackTrace();
             } finally {
                 documento.close();
             }
@@ -148,6 +166,10 @@ public class Tablerodecontrol extends AppCompatActivity {
             File fichero = null;
             if(ruta != null) {
                 fichero = new File(ruta, nombreFichero);
+            } else {
+                int randomInteger = (int)(Math.random()*100);
+                String nombreArchivo = "Medicamento"+randomInteger+".pdf";
+                fichero = new File(ruta, nombreArchivo);
             }
 
             return fichero;
@@ -171,6 +193,11 @@ public class Tablerodecontrol extends AppCompatActivity {
             return ruta;
         }
 
+        public boolean verificarRuta(){
+            File file = new File("/sdcard/Download/MisPDFs/MiPDF.pdf");
+            return file.exists();
+        }
+
 
     public void Consultar(){
         if(ETt.getText().toString().isEmpty()){//Si estan vacios
@@ -179,7 +206,7 @@ public class Tablerodecontrol extends AppCompatActivity {
         }
         else{
 
-            new ConsultarDatos().execute("http://10.0.2.2/proyectodegrado/Tablerodecontrol_A.php?id="+ETt.getText().toString());
+            new ConsultarDatos().execute("http://4fac634553fb.ngrok.io/proyectodegrado/Tablerodecontrol_A.php?id="+ETt.getText().toString());
 
         }
     }
@@ -233,7 +260,7 @@ public class Tablerodecontrol extends AppCompatActivity {
 
 
 
-                        elemento[i] = "\n Id=" + idM +"\n Codigo=" + Cdm + "\n Nombre=" + Nm + "\n Ubicacion=" + Ub;
+                        elemento[i] = "\n Id=" + idM +"\n Codigo=" + Cdm + "\n Nombre=" + Nm + "\n Cantidad=" + Ub;
                     }
 
                     mostrar();
